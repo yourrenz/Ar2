@@ -17,7 +17,7 @@
 
       /* GÜNLÜKLER KUTUSU (VERSION LOG) */
       #version-box {
-        position: fixed; top: 10px; right: 10px; width: 160px;
+        position: fixed; top: 10px; right: 10px; width: 170px;
         background: rgba(0, 0, 0, 0.7); color: white; padding: 10px;
         border-radius: 8px; font-size: 11px; z-index: 10000;
         backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.2);
@@ -63,12 +63,12 @@
     <div id="version-box">
       <h3>Günlükler</h3>
       <ul>
-        <li><strong>v1.0.5:</strong> Dosya ismi 'targets.mind' olarak güncellendi.</li>
-        <li><strong>v1.0.4:</strong> Media klasörü bağlandı.</li>
+        <li><strong>v1.0.6:</strong> Tüm dosyalar (mind, mp4) 'media' klasörüne taşındı.</li>
+        <li><strong>v1.0.5:</strong> Dosya ismi hataları giderildi.</li>
       </ul>
     </div>
 
-    <div id="error-message">HATA: Dosyalar yüklenemedi. 'targets.mind' veya video yolunu kontrol edin.</div>
+    <div id="error-message">HATA: Dosyalar bulunamadı. 'media' klasörünü ve dosya isimlerini kontrol edin.</div>
 
     <div id="start-screen">
       <h1>Rapunzel AR</h1>
@@ -79,7 +79,7 @@
     <div id="scanning-overlay"></div>
 
     <a-scene 
-      mindar-image="imageTargetSrc: ./targets.mind; uiScanning: no; uiLoading: no;" 
+      mindar-image="imageTargetSrc: ./media/targets.mind; uiScanning: no; uiLoading: no;" 
       color-space="sRGB" 
       renderer="colorManagement: true, physicallyCorrectLights" 
       vr-mode-ui="enabled: false" 
@@ -116,10 +116,10 @@
       scene.addEventListener("arError", (event) => {
         console.error("AR Hatası:", event);
         errorMessage.style.display = 'block';
-        errorMessage.innerText = "HATA: AR dosyası yüklenemedi. 'targets.mind' dosyasının GitHub'da yüklü olduğundan emin olun.";
+        errorMessage.innerText = "HATA: AR dosyası yüklenemedi. 'media/targets.mind' dosyasının yerini kontrol edin.";
       });
 
-      // 2. Başlat Butonu (Kamera izni ve Video Kilidi)
+      // 2. Başlat Butonu
       startButton.addEventListener('click', () => {
         startScreen.classList.add('hidden');
         scanningOverlay.style.display = 'block';
