@@ -11,51 +11,50 @@
     <style>
       body { margin: 0; overflow: hidden; font-family: 'Arial', sans-serif; }
       
-      /* --- MINDAR VARSAYILAN YÜKLEME İKONUNU GİZLE --- */
-      /* Bu sınıflar kütüphanenin otomatik oluşturduğu yükleme ekranını yok eder */
+      /* Yükleme İkonlarını Gizle */
       .mindar-ui-loading { display: none !important; }
       .mindar-ui-overlay { display: none !important; }
 
-      /* --- GÜNLÜKLER KUTUSU (VERSION LOG) --- */
+      /* GÜNLÜKLER KUTUSU (VERSION LOG) */
       #version-box {
-        position: fixed; top: 10px; right: 10px; width: 140px;
+        position: fixed; top: 10px; right: 10px; width: 160px;
         background: rgba(0, 0, 0, 0.7); color: white; padding: 10px;
         border-radius: 8px; font-size: 11px; z-index: 10000;
         backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.2);
       }
-      #version-box h3 {
-        margin: 0 0 5px 0; font-size: 13px; color: #ff4081;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.3); padding-bottom: 3px;
-      }
-      #version-box ul { list-style: none; padding: 0; margin: 0; max-height: 100px; overflow-y: auto; }
+      #version-box h3 { margin: 0 0 5px 0; font-size: 13px; color: #ff4081; border-bottom: 1px solid rgba(255, 255, 255, 0.3); padding-bottom: 3px; }
+      #version-box ul { list-style: none; padding: 0; margin: 0; max-height: 120px; overflow-y: auto; }
       #version-box li { margin-bottom: 4px; line-height: 1.4; }
       
-      /* --- GİRİŞ VE İZİN EKRANI --- */
+      /* BAŞLANGIÇ EKRANI */
       #start-screen {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(0, 0, 0, 0.95); z-index: 9999;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         color: white; text-align: center;
       }
-      
       #start-button {
         padding: 15px 30px; font-size: 18px; font-weight: bold;
         background: linear-gradient(45deg, #ff4081, #ff80ab); color: white;
         border: none; border-radius: 25px; cursor: pointer; margin-top: 30px;
         box-shadow: 0 4px 15px rgba(255, 64, 129, 0.6);
-        transition: transform 0.2s;
         text-transform: uppercase; letter-spacing: 1px;
       }
-      #start-button:active { transform: scale(0.95); }
 
-      /* Tarama Çerçevesi */
+      /* HATA MESAJI KUTUSU */
+      #error-message {
+        display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+        background: #d32f2f; color: white; padding: 15px; border-radius: 5px; z-index: 20000;
+        text-align: center; width: 90%; font-size: 14px;
+      }
+
+      /* TARAMA ÇERÇEVESİ */
       #scanning-overlay {
         display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         pointer-events: none; z-index: 999;
         background: url('https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.0/examples/image-tracking/assets/card-example/softmind/overlay.png') no-repeat center center;
         background-size: 80%; opacity: 0.5;
       }
-      
       .hidden { display: none !important; }
     </style>
   </head>
@@ -64,21 +63,23 @@
     <div id="version-box">
       <h3>Günlükler</h3>
       <ul>
-        <li><strong>v1.0.2:</strong> Yükleme ikonu kaldırıldı. Kamera izni butonu eklendi.</li>
-        <li><strong>v1.0.1:</strong> Proje başlatıldı.</li>
+        <li><strong>v1.0.5:</strong> Dosya ismi 'targets.mind' olarak güncellendi.</li>
+        <li><strong>v1.0.4:</strong> Media klasörü bağlandı.</li>
       </ul>
     </div>
 
+    <div id="error-message">HATA: Dosyalar yüklenemedi. 'targets.mind' veya video yolunu kontrol edin.</div>
+
     <div id="start-screen">
       <h1>Rapunzel AR</h1>
-      <p style="opacity: 0.8; margin-top: 10px;">Devam etmek için kamera izni verin.</p>
+      <p style="opacity: 0.8; margin-top: 10px;">Devam etmek için butona basın.</p>
       <button id="start-button">KAMERAYI BAŞLAT</button>
     </div>
 
     <div id="scanning-overlay"></div>
 
     <a-scene 
-      mindar-image="imageTargetSrc: ./targets (1).mind; uiScanning: no; uiLoading: no;" 
+      mindar-image="imageTargetSrc: ./targets.mind; uiScanning: no; uiLoading: no;" 
       color-space="sRGB" 
       renderer="colorManagement: true, physicallyCorrectLights" 
       vr-mode-ui="enabled: false" 
@@ -86,7 +87,7 @@
       
       <a-assets>
         <video id="rapunzelVideo" 
-               src="./resim_video/video%20rapunzel.mp4" 
+               src="./media/video_rapunzel.mp4" 
                preload="auto" 
                loop="true" 
                playsinline 
@@ -108,34 +109,36 @@
       const scanningOverlay = document.getElementById('scanning-overlay');
       const video = document.getElementById('rapunzelVideo');
       const target = document.getElementById('mytarget');
+      const errorMessage = document.getElementById('error-message');
+      const scene = document.querySelector('a-scene');
 
-      // BUTONA TIKLANDIĞINDA
+      // 1. AR Yükleme Hatası Yakalama
+      scene.addEventListener("arError", (event) => {
+        console.error("AR Hatası:", event);
+        errorMessage.style.display = 'block';
+        errorMessage.innerText = "HATA: AR dosyası yüklenemedi. 'targets.mind' dosyasının GitHub'da yüklü olduğundan emin olun.";
+      });
+
+      // 2. Başlat Butonu (Kamera izni ve Video Kilidi)
       startButton.addEventListener('click', () => {
-        // 1. Ekranı gizle
         startScreen.classList.add('hidden');
-        
-        // 2. Tarama rehberini göster
         scanningOverlay.style.display = 'block';
         
-        // 3. Videonun ses kilidini aç (Mobil tarayıcılar için şart)
+        // Videoyu sessizce oynatıp durdurarak mobil tarayıcı kilidini aç
         video.play().then(() => {
           video.pause();
           video.currentTime = 0;
-        }).catch((error) => {
-          console.log("Video otomatik oynatma hatası (Normaldir): ", error);
-        });
-
-        // 4. Bu noktada tarayıcı otomatik olarak "Kamera kullanılsın mı?" diye soracaktır.
+        }).catch((e) => console.log("Otomatik oynatma izni bekleniyor:", e));
       });
 
-      // HEDEF BULUNDU
+      // 3. Resim Bulundu
       target.addEventListener("targetFound", event => {
         console.log("Hedef bulundu");
         scanningOverlay.style.display = 'none';
         video.play();
       });
 
-      // HEDEF KAYBOLDU
+      // 4. Resim Kayboldu
       target.addEventListener("targetLost", event => {
         console.log("Hedef kayboldu");
         scanningOverlay.style.display = 'block';
