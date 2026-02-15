@@ -1,1 +1,55 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    
+    <style>
+      body { margin: 0; overflow: hidden; }
+      /* Video başlaması için ekrana tıklama uyarısı */
+      #ui {
+        position: fixed; z-index: 1000; bottom: 20px; left: 50%;
+        transform: translateX(-50%); background: rgba(0,0,0,0.5);
+        color: white; padding: 10px; border-radius: 10px; font-family: sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="ui">Resmi kameraya gösterin (Sesi açmak için ekrana dokunun)</div>
 
+    <a-scene mindar-image="imageTargetSrc: ./targets (1).mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+      
+      <a-assets>
+        <video id="rapunzelVideo" src="./resim_video/video%20rapunzel.mp4" loop="true" crossorigin="anonymous"></video>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <a-entity mindar-image-target="targetIndex: 0">
+        <a-video id="video-display" src="#rapunzelVideo" width="1" height="0.55" position="0 0 0"></a-video>
+      </a-entity>
+    </a-scene>
+
+    <script>
+      // Resim göründüğünde videoyu başlat, kaybolduğunda durdur
+      const video = document.querySelector("#rapunzelVideo");
+      const targetEntity = document.querySelector('[mindar-image-target]');
+
+      targetEntity.addEventListener("targetFound", event => {
+        console.log("Resim bulundu");
+        video.play();
+      });
+
+      targetEntity.addEventListener("targetFound", event => {
+        console.log("Resim kayboldu");
+        video.pause();
+      });
+
+      // Tarayıcı kısıtlamaları nedeniyle ilk oynatma için etkileşim şarttır
+      window.addEventListener('click', () => {
+          video.play();
+          video.pause(); // Sadece kilidi açmak için
+      });
+    </script>
+  </body>
+</html>
